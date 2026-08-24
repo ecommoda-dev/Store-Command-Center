@@ -26,7 +26,7 @@ database_id   = "90db62d3-bd7e-4d92-912b-10fc78eeb565"
 #    الاسم المقترح للـ namespace: Store-Command-Center
 [[kv_namespaces]]
 binding = "DASH_KV"
-id      = "PUT_KV_NAMESPACE_ID_HERE"
+id      = "b510268e7c454dbc9f669c52fa618565"
 
 # ─── Vars (نص عادي — مش أسرار) ──────────────────────────────────
 # بتتطبّق فعليًا مع Workers Builds (اتأكد 22-08-2026).
