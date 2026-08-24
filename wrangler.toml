@@ -1,0 +1,46 @@
+# ══════════════════════════════════════════════════════════════════
+# Store Command Center — مركز قيادة المتجر
+#
+# ⚠️ name لازم يطابق اسم الـ Worker في داشبورد Cloudflare **حرف بحرف**.
+#    لو اختلفوا، الـ build مش بيفشل — بينشر Worker جديد والأصلي بيتجمّد بصمت.
+# ══════════════════════════════════════════════════════════════════
+
+name               = "store-command-center-worker"
+main               = "index.js"
+compatibility_date = "2025-01-01"
+workers_dev        = true
+
+[observability]
+enabled = true
+
+# ─── D1 — سجل العمليات المشترك ──────────────────────────────────
+# الـ binding دايمًا "DB" — أي اسم تاني والكتابة بتفشل بصمت
+[[d1_databases]]
+binding       = "DB"
+database_name = "ecommoda-dev-logs"
+database_id   = "90db62d3-bd7e-4d92-912b-10fc78eeb565"
+
+# ─── KV — كاش الداشبورد ─────────────────────────────────────────
+# ⚠️ الـ binding لازم يكون DASH_KV بالظبط (الكود بيقرا env.DASH_KV).
+# ⚠️ id لازم يتحط قبل أول نشر — من Cloudflare → Storage & Databases → KV.
+#    الاسم المقترح للـ namespace: Store-Command-Center
+[[kv_namespaces]]
+binding = "DASH_KV"
+id      = "PUT_KV_NAMESPACE_ID_HERE"
+
+# ─── Vars (نص عادي — مش أسرار) ──────────────────────────────────
+# بتتطبّق فعليًا مع Workers Builds (اتأكد 22-08-2026).
+# الأداة read-only ومش بتلمس المخزون، فـ LOCATION_ID مش مطلوب.
+[vars]
+SHOP_DOMAIN = "6c7e1a-53.myshopify.com"
+
+# ⚠️ مفيش [triggers] ومفيش crons — قاعدة رقم 1 في ecommoda-dashboard-builder:
+#    الداشبورد بيتحدّث بحدثين بس (زرار التحديث · تغيير الفترة). أي Cron هنا
+#    بيضيف سطح فشل جديد وبيخلي البيانات قديمة بالتصميم.
+
+# ⚠️ الأسرار مبتتكتبش هنا أبدًا:
+#    Worker → Settings → Variables and Secrets → علّم Secret
+#      WORKER_SECRET   (قيمة فريدة للأداة دي)
+#      CLIENT_ID       (تطبيق شوبيفاي المخصص)
+#      CLIENT_SECRET
+#    وبعدها: Deployments → Version History → ⋯ → Promote version
