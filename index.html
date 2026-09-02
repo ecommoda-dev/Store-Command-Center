@@ -536,9 +536,7 @@
   <button class="main-tab-btn"        id="tabBtn-ops"       onclick="switchMainTab('ops')">📦 الأوردرات والتشغيل</button>
   <button class="main-tab-btn"        id="tabBtn-products"  onclick="switchMainTab('products')">👟 المنتجات</button>
   <button class="main-tab-btn"        id="tabBtn-stock"     onclick="switchMainTab('stock')">📊 المخزون</button>
-  <button class="main-tab-btn"        id="tabBtn-geo"       onclick="switchMainTab('geo')">🗺️ الجغرافيا والمناديب</button>
   <button class="main-tab-btn"        id="tabBtn-customers" onclick="switchMainTab('customers')">👥 العملاء والخزنة</button>
-  <button class="main-tab-btn"        id="tabBtn-log"       onclick="switchMainTab('log')">📜 السجل</button>
 </div>
 
 <!-- ─── §DASH — freshness + refresh + date range (نفس الصف، نفس الحاوية) ─── -->
@@ -598,9 +596,7 @@
   <div class="tab-panel" id="panel-ops"></div>
   <div class="tab-panel" id="panel-products"></div>
   <div class="tab-panel" id="panel-stock"></div>
-  <div class="tab-panel" id="panel-geo"></div>
   <div class="tab-panel" id="panel-customers"></div>
-  <div class="tab-panel" id="panel-log"></div>
 </main>
 
 <!-- ─── Settings modal ─── -->
@@ -664,9 +660,16 @@
     <div class="eco-modal-body">
       <div class="cl-version-block">
         <div class="cl-version-head">
-          <span class="cl-version-num" id="clLatestVer">v1.0.0</span>
-          <span class="cl-version-date">23-08-2026</span>
+          <span class="cl-version-num" id="clLatestVer">v1.1.0</span>
+          <span class="cl-version-date">02-09-2026</span>
           <span class="cl-latest">الأحدث</span>
+        </div>
+        <div class="cl-entry"><span class="cl-tag change">تغيير</span><span>حذف تاب <b>«الجغرافيا والمناديب»</b> وتاب <b>«السجل»</b> من الأداة.</span></div>
+      </div>
+      <div class="cl-version-block">
+        <div class="cl-version-head">
+          <span class="cl-version-num">v1.0.0</span>
+          <span class="cl-version-date">23-08-2026</span>
         </div>
         <div class="cl-entry"><span class="cl-tag new">جديد</span><span>إطلاق «مركز قيادة المتجر» — ٨ تابات فوق ٣ مصادر بيانات (أوردرات شوبيفاي · كتالوج المنتجات · سجل D1).</span></div>
         <div class="cl-entry"><span class="cl-tag new">جديد</span><span>محرك الرؤى: ٢٥ قاعدة بترتّب نفسها <b>بالأثر بالجنيه</b> مش بالنسبة، وكل رؤية بتقول تعمل إيه.</span></div>
@@ -730,8 +733,6 @@
             <tr><td><code>diag</code></td><td>GET — فحص ذاتي بدون كتابة وبدون عرض أي سر</td></tr>
             <tr><td><code>get_config</code></td><td>GET — نسخة الـ Worker (للمقارنة مع نسخة الواجهة)</td></tr>
             <tr><td><code>check_employee</code> / <code>register_pin</code> / <code>verify_employee</code> / <code>log_logout</code> / <code>get_employees</code></td><td>تسجيل الدخول القياسي (D1)</td></tr>
-            <tr><td><code>get_logs</code> / <code>get_logs_count</code> / <code>get_logs_export</code> / <code>get_log_tools</code></td>
-                <td>تاب السجل — الفلاتر متعددة القيم (قائمة مفصولة بفواصل) والترتيب من قائمة أعمدة مسموحة، والاتنين بيتنفّذوا في SQL على <strong>السجل كله</strong> مش على الصفحة المعروضة</td></tr>
           </table>
         </div>
       </details>
@@ -751,7 +752,6 @@
             <li><code>§RENDER-CMD</code> … <code>§RENDER-CUST</code> — راسم كل تاب</li>
             <li><code>§CHARTS</code> — Chart.js + إضافات محلية لكتابة القيم على الرسم</li>
             <li><code>§TABLE-SERVER</code> — نفس كومبوننت الجدول بس الفلترة والترتيب في SQL</li>
-            <li><code>§LOG-JS</code> — تاب السجل (مبني على الكومبوننت الموحّد في وضع السيرفر)</li>
             <li>Worker <code>§ANALYTICS</code> — كل التجميعات · <code>§INSIGHTS</code> — ٢٥ قاعدة · <code>§STATS</code> — Wilson · MAD · CUSUM</li>
           </ul>
 
@@ -788,7 +788,7 @@
             <li><strong>السلسلة اليومية مسقوفة عند ٤٠٠ نقطة</strong> — الرسم بيوقف عند الحد ببانر صريح،
               والأرقام الإجمالية والجداول مش متأثرة.</li>
             <li><strong>عطل رسم في تاب ≠ فشل تحميل</strong> — الاستثناء بيتعرض جوّه التاب نفسه، والبيانات
-              والتابات التانية بتفضل شغّالة. وتاب السجل بيفضل مفتوح حتى لو <code>get_data</code> فشل.</li>
+              والتابات التانية بتفضل شغّالة.</li>
             <li><strong>فترات أطول من ٤٥ يوم</strong> بترجع التجميعات كاملة بدون جداول التفاصيل — بإعلان صريح.</li>
           </ul>
         </div>
@@ -854,7 +854,7 @@ const LS_SECRET       = 'scc_worker_secret';
 const LS_ADMIN_URL    = 'admin_worker_url';     // مشترك بين كل الأدوات — ممنوع إعادة تسميته
 const LS_LEAD_TIME    = 'scc_lead_time_days';
 const LS_MARGIN_FLOOR = 'scc_margin_floor_pct';
-const TOOL_VERSION    = 'v1.0.0';               // المصدر الوحيد لرقم النسخة
+const TOOL_VERSION    = 'v1.1.0';               // المصدر الوحيد لرقم النسخة
 const SHOP_DOMAIN     = '6c7e1a-53.myshopify.com';
 const CURRENCY        = 'ج.م';
 const TABLE_PAGE_ROWS = 300;
@@ -1199,7 +1199,6 @@ async function doLogout() {
   clearTimeout(rangeDebounce);
   Object.keys(state.charts).forEach(destroyChart);
   state.data = null; state.tables = {}; state.renderedTabs = {}; state.meta = { lastUpdated: null, source: null };
-  logLoaded = false;
   TABS.forEach(t => { const el = document.getElementById('panel-' + t); if (el) el.innerHTML = ''; });
   document.getElementById('globalBanners').innerHTML = '';
   document.getElementById('appMain').style.display = 'none';
@@ -1364,14 +1363,10 @@ function startFreshnessTimer() {
   freshnessTimer = setInterval(() => { if (state.meta.lastUpdated) renderFreshness(state.meta.lastUpdated, state.meta.source); }, 60000);
 }
 
-// ⚠️ الرؤية اتفصلت عن الحالة عن قصد: تاب «السجل» بيقرأ من D1 مباشرةً ومالوش
-// علاقة بـ get_data، فلو الجلب فشل لازم يفضل مفتوح — ده تحديدًا وقت ما المدير
-// محتاج يبص في السجل يشوف حصل إيه. أي تاب تاني بيفضل متخفي في حالة الخطأ.
 function syncViewVisibility() {
   const vs = document.getElementById('viewState');
   const main = document.getElementById('appMain');
-  const logEscape = state.viewState === 'error' && state.activeTab === 'log';
-  if (state.viewState === 'ready' || logEscape) { main.style.display = 'block'; vs.style.display = logEscape ? 'none' : ''; }
+  if (state.viewState === 'ready') { main.style.display = 'block'; vs.style.display = ''; }
   else { main.style.display = 'none'; vs.style.display = ''; }
 }
 function setViewState(s, err) {
@@ -1387,8 +1382,7 @@ function setViewState(s, err) {
     vs.innerHTML = '<div class="error-state">' +
       '<div class="error-title">⚠️ فشل تحميل البيانات</div>' +
       '<div class="error-msg">' + esc(err?.message || 'خطأ غير معروف') + '</div>' +
-      '<button class="btn btn-primary" onclick="doRefresh()">إعادة المحاولة</button> ' +
-      '<button class="btn" onclick="switchMainTab(\'log\')">📜 افتح السجل</button>' +
+      '<button class="btn btn-primary" onclick="doRefresh()">إعادة المحاولة</button>' +
       (err?.step || err?.technical
         ? '<details><summary style="cursor:pointer;font-size:12px;color:var(--text-secondary);">تفاصيل تقنية</summary><pre>step: ' +
           esc(err.step || '—') + '\n' + esc(err.technical || '') + '</pre></details>' : '') +
@@ -1472,18 +1466,13 @@ function renderGlobalBanners(d) {
 // ══════════════════════════════════════════════════════
 // §TABS-JS — التبديل بدون أي fetch إضافي
 // ══════════════════════════════════════════════════════
-const TABS = ['cmd', 'sales', 'ops', 'products', 'stock', 'geo', 'customers', 'log'];
+const TABS = ['cmd', 'sales', 'ops', 'products', 'stock', 'customers'];
 function switchMainTab(tab) {
   state.activeTab = tab;
   TABS.forEach(t => {
     document.getElementById('tabBtn-' + t).classList.toggle('active', t === tab);
     document.getElementById('panel-' + t).classList.toggle('active', t === tab);
   });
-  // فلتر التاريخ مالوش معنى في تاب السجل (بيفلتر بنفسه server-side)
-  // فلتر التاريخ والبانرات العامة كلهم بيوصفوا حمولة get_data — ومالهمش أي معنى
-  // في تاب السجل اللي بيقرأ من D1 بفلترة خاصة بيه.
-  document.getElementById('dashControls').style.display = tab === 'log' ? 'none' : 'flex';
-  document.getElementById('globalBanners').style.display = tab === 'log' ? 'none' : 'block';
   syncViewVisibility();
   renderActiveTab();
 }
@@ -1493,13 +1482,10 @@ const TAB_RENDERERS = {
   ops:       () => renderOpsTab(),
   products:  () => renderProductsTab(),
   stock:     () => renderStockTab(),
-  geo:       () => renderGeoTab(),
   customers: () => renderCustomersTab(),
-  log:       () => renderLogTab(),
 };
 function renderActiveTab() {
   const t = state.activeTab;
-  if (t === 'log') { try { renderLogTab(); } catch (e) { panelError('log', e); } return; }
   if (!state.data) return;
   if (state.renderedTabs[t]) return;
   const fn = TAB_RENDERERS[t];
@@ -2197,7 +2183,7 @@ function insightCard(i, idx) {
     '<div class="ins-meta"><span class="ins-badge">' + (SEV_LABEL[sev] || '—') + '</span>' +
       '<span class="ins-badge">' + esc(i.domain || '—') + '</span>' +
       '<span class="ins-badge">ثقة: ' + (({ high: 'عالية', med: 'متوسطة', low: 'تقديرية' })[i.conf] || '—') + '</span>' +
-      (i.tab ? '<button class="ins-goto" onclick="switchMainTab(\'' + i.tab + '\')">افتح التاب المرتبط ←</button>' : '') +
+      (i.tab && TABS.includes(i.tab) ? '<button class="ins-goto" onclick="switchMainTab(\'' + i.tab + '\')">افتح التاب المرتبط ←</button>' : '') +
     '</div></div>';
 }
 
@@ -2230,7 +2216,7 @@ function renderCmdTab() {
     kpiCard({ label: 'نسبة الرفض RTO', value: fmtPct(k.rtoRate), color: k.rtoRate <= 12 ? 'clr-green' : 'clr-red',
       state: k.rtoRate <= 12 ? 'good' : k.rtoRate <= 20 ? 'warning' : 'bad',
       hint: 'أوردر خرج للعميل ورفض الاستلام — الفلوس ما اتحصّلتش والشحن اتدفع رايح وجاي.',
-      delta: deltaHtml(k.rtoRate, p?.rtoRate, 'lower_better', true), onclick: "switchMainTab('geo')" }),
+      delta: deltaHtml(k.rtoRate, p?.rtoRate, 'lower_better', true) }),
     kpiCard({ label: 'نسبة الإلغاء', value: fmtPct(k.cancelRate), color: k.cancelRate <= 15 ? 'clr-green' : 'clr-amber',
       state: k.cancelRate <= 15 ? 'good' : k.cancelRate <= 25 ? 'warning' : 'bad',
       hint: 'أوردر اتلغى قبل ما يخرج من المخزن. غالبًا سببه التأكيد أو التكرار.',
@@ -2300,7 +2286,6 @@ function renderCmdTab() {
     ['فاريانت بدون تكلفة', (d.inventory?.missingCost || []).length, 'stock'],
     ['خطأ في سعر المقارنة', (d.inventory?.priceErrors || []).length, 'products'],
     ['أوردرات خارج التصنيف', dq.unclassifiedOrders || 0, 'ops'],
-    ['شحن بدون مندوب', dq.noCourierShipped || 0, 'geo'],
     ['SKU مكرر في الكتالوج', (dq.duplicateSkus || []).length, 'products'],
     ['SKU مباع مش في الكتالوج', dq.skuNotInCatalogCount || 0, 'products'],
   ];
@@ -2923,123 +2908,6 @@ function renderStockTab() {
 }
 
 // ══════════════════════════════════════════════════════
-// §RENDER-GEO — الجغرافيا والمناديب
-// ══════════════════════════════════════════════════════
-function renderGeoTab() {
-  const d = state.data, k = d.kpi;
-  const geo = (d.geo || []).filter(g => g.orders > 0);
-  const couriers = (d.couriers || []).filter(c => c.orders > 0);
-  const zones = d.zones || [];
-  const dq = d.dataQuality || {};
-  const baseRTO = k.rtoRate;
-
-  const bigGeo = geo.filter(g => (g.delivered + g.rto + g.fullReturn) >= 20);
-  const smallGeo = geo.filter(g => (g.delivered + g.rto + g.fullReturn) < 20);
-
-  const cards = [
-    kpiCard({ label: 'محافظات فعّالة', value: fmtInt(geo.length), color: 'clr-purple' }),
-    kpiCard({ label: 'أعلى محافظة', value: esc(geo[0]?.gov || '—'), color: 'clr-accent',
-      note: geo[0] ? fmtInt(geo[0].orders) + ' أوردر · ' + fmtPct(geo[0].share) + ' من الإجمالي' : '' }),
-    kpiCard({ label: 'مناديب/شركات شحن', value: fmtInt(couriers.filter(c => c.courier !== 'غير محدد').length), color: 'clr-purple' }),
-    kpiCard({ label: 'شحن بدون مندوب', value: fmtInt(dq.noCourierShipped || 0), color: (dq.noCourierShipped ? 'clr-amber' : 'clr-green'),
-      state: dq.noCourierShipped ? 'warning' : 'good',
-      hint: 'شحنات مالهاش مندوب مسجّل — يعني تقييم المناديب مبني على أقل من الحقيقة.' }),
-    kpiCard({ label: 'محافظات باسم غير معروف', value: fmtInt(dq.unknownGov || 0), color: (dq.unknownGov ? 'clr-amber' : 'clr-green'),
-      state: dq.unknownGov ? 'warning' : 'good',
-      hint: 'أسماء ما اتعرفتش في جدول التطبيع — بتظهر زي ما هي وبتفرّق الأرقام على أكتر من صف.' }),
-    kpiCard({ label: 'أوردرات بمنطقة BLANK', value: fmtInt(dq.blankZone || 0), color: (dq.blankZone ? 'clr-amber' : 'clr-green'),
-      state: dq.blankZone ? 'warning' : 'good',
-      hint: 'حقل zone فاضي — بيقلّل دقة «المؤشر المعدَّل» بتاع المناديب.' }),
-  ].join('');
-
-  const geoTable =
-    '<div class="tbl-scroll"><table class="data-table"><thead><tr>' +
-    '<th>المحافظة</th><th>أوردرات</th><th>نصيب</th><th>مُسلَّم</th><th>مرفوض</th><th>نسبة التسليم</th><th>نسبة الرفض</th><th>مقابل المتوسط</th><th>صافي المبيعات</th><th>AOV</th></tr></thead><tbody>' +
-    bigGeo.map(g => {
-      const diff = g.rtoRate - baseRTO;
-      return '<tr><td>' + esc(g.gov) + '</td><td class="col-num">' + fmtInt(g.orders) + '</td>' +
-        '<td class="col-num">' + fmtPct(g.share) + '</td><td class="col-num">' + fmtInt(g.delivered) + '</td>' +
-        '<td class="col-num">' + fmtInt(g.rto) + '</td>' +
-        '<td class="col-num"><span class="badge ' + (g.deliveryRate >= 85 ? 'g' : g.deliveryRate >= 70 ? 'a' : 'r') + '">' + fmtPct(g.deliveryRate) + '</span></td>' +
-        '<td class="col-num"><span class="badge ' + (g.rtoRate <= 12 ? 'g' : g.rtoRate <= 20 ? 'a' : 'r') + '">' + fmtPct(g.rtoRate) + '</span></td>' +
-        '<td class="col-num ' + (diff > 0 ? 'clr-red' : 'clr-green') + '">' + (diff > 0 ? '+' : '') + fmtPct(diff) + '</td>' +
-        '<td class="col-num">' + fmtMoney(g.net) + '</td><td class="col-num">' + fmtMoney(g.aov) + '</td></tr>';
-    }).join('') + '</tbody></table></div>' +
-    (smallGeo.length ? '<div class="footnote">📉 <b>' + smallGeo.length + ' محافظة</b> عندها أقل من ٢٠ أوردر منتهي، فمستبعدة من الجدول فوق: ' +
-      'نسبة محسوبة على ٥ أوردرات مش إشارة، هي ضوضاء. (' + smallGeo.slice(0, 12).map(g => esc(g.gov) + ' ' + g.orders).join(' · ') + ')</div>' : '');
-
-  const courierTable =
-    '<div class="tbl-scroll"><table class="data-table"><thead><tr>' +
-    '<th>المندوب / الشركة</th><th>منطقته</th><th>شحنات</th><th>مُسلَّم</th><th>مرفوض</th><th>نسبة التسليم</th><th>متوسط منطقته</th><th>المؤشر المعدَّل</th><th>صافي المبيعات</th></tr></thead><tbody>' +
-    couriers.filter(c => c.shipped >= 5).map(c =>
-      '<tr><td>' + esc(c.courier) + '</td><td>' + esc(c.zone || '—') + '</td>' +
-      '<td class="col-num">' + fmtInt(c.shipped) + '</td><td class="col-num">' + fmtInt(c.delivered) + '</td>' +
-      '<td class="col-num">' + fmtInt(c.rto) + '</td>' +
-      '<td class="col-num">' + fmtPct(c.deliveryRate) + '</td>' +
-      '<td class="col-num clr-muted">' + (c.zoneDeliveryRate == null ? '—' : fmtPct(c.zoneDeliveryRate)) + '</td>' +
-      '<td class="col-num">' + (c.adjIndex == null ? '—' :
-        '<span class="badge ' + (c.adjIndex >= 1 ? 'g' : c.adjIndex >= .9 ? 'a' : 'r') + '">' + fmtNum(c.adjIndex, 2) + '</span>') + '</td>' +
-      '<td class="col-num">' + fmtMoney(c.net) + '</td></tr>').join('') +
-    '</tbody></table></div>' +
-    '<div class="footnote">⚖️ <b>ليه «المؤشر المعدَّل» موجود:</b> نسبة تسليم المندوب لوحدها ظالمة — اللي شغّال في منطقة صعبة ' +
-    'هيبان أسوأ من اللي شغّال في مدينة نصر لأسباب مالهاش علاقة بشغله. المؤشر = نسبة نجاحه ÷ متوسط نجاح <b>منطقته</b>. ' +
-    '<b>1.00</b> = بالظبط زي متوسط منطقته · أقل من <b>0.90</b> = فرق يستاهل جلسة · أعلى من <b>1.10</b> = يستاهل يتقلّد. ' +
-    'المناديب اللي أقل من ٥ شحنات مستبعدين — العيّنة أصغر من إنها تقول حاجة.</div>';
-
-  const zoneHtml = zones.length ? '<div class="mini-list">' + zones.map(z =>
-    '<div class="mini-row"><span>' + esc(z.zone) + '</span><b>' + fmtInt(z.orders) + ' أوردر</b>' +
-    '<span class="badge ' + (z.deliveryRate >= 85 ? 'g' : 'a') + '">تسليم ' + fmtPct(z.deliveryRate) + '</span>' +
-    '<b>' + fmtMoney(z.net) + '</b></div>').join('') + '</div>' : '<div class="empty-state">لا توجد بيانات مناطق</div>';
-
-  document.getElementById('panel-geo').innerHTML =
-    '<div class="kpi-grid cols-6">' + cards + '</div>' +
-    '<div class="chart-grid">' +
-      '<div class="chart-card"><h3>🗺️ أعلى ١٢ محافظة بالأوردرات</h3><div class="chart-sub">مع نسبة الرفض لكل منها</div>' +
-        '<div class="chart-wrap tall"><canvas id="chartGeoOrders"></canvas></div></div>' +
-      '<div class="chart-card"><h3>🎯 الحجم مقابل نسبة الرفض</h3>' +
-        '<div class="chart-sub">الخط الأحمر = متوسط المتجر (' + fmtPct(baseRTO) + '). اللي فوق الخط وحجمه كبير = أولوية</div>' +
-        '<div class="chart-wrap tall"><canvas id="chartGeoRto"></canvas></div></div>' +
-    '</div>' +
-    section('geoTable', '📋 المحافظات — الجدول الكامل', 'المحافظات اللي عندها ٢٠ أوردر منتهي فأكتر', geoTable) +
-    section('geoCourier', '🚚 كشف حساب المناديب وشركات الشحن', 'معدَّل على صعوبة المنطقة', courierTable) +
-    section('geoZones', '📍 المناطق', '', zoneHtml) +
-    '<div class="footnote">🧭 <b>تطبيع أسماء المحافظات:</b> الأداة بتوحّد الهجاءات المختلفة (Cairo / Al Qahirah / القاهرة) ' +
-    'وبتنقل «6th of October» و«Helwan» للمحافظة الإدارية الصحيحة (الجيزة/القاهرة). ' +
-    'أي اسم مش في الجدول بيظهر زي ما هو وبيتعدّ في «محافظات باسم غير معروف» فوق.</div>';
-
-  const top12 = geo.slice(0, 12);
-  makeBar('chartGeoOrders', top12.map(g => g.gov), [
-    { label: 'أوردرات', data: top12.map(g => g.orders), backgroundColor: CSSVAR('--accent') },
-  ], {});
-  const scatter = bigGeo.slice(0, 20);
-  const el = ensureChartLib('chartGeoRto') ? document.getElementById('chartGeoRto') : null;
-  destroyChart('chartGeoRto');
-  if (el) {
-    state.charts['chartGeoRto'] = new Chart(el, {
-      type: 'scatter',
-      data: { datasets: [{
-        label: 'المحافظات',
-        data: scatter.map(g => ({ x: g.orders, y: g.rtoRate, gov: g.gov, net: g.net })),
-        backgroundColor: scatter.map(g => g.rtoRate > baseRTO ? CSSVAR('--red') : CSSVAR('--green')),
-        pointRadius: scatter.map(g => Math.max(5, Math.min(20, Math.sqrt(g.net / 4000)))),
-      }] },
-      options: { responsive: true, maintainAspectRatio: false,
-        scales: { x: { title: { display: true, text: 'عدد الأوردرات', font: { family: 'Noto Sans Arabic' } }, beginAtZero: true },
-                  y: { title: { display: true, text: 'نسبة الرفض %', font: { family: 'Noto Sans Arabic' } }, beginAtZero: true } },
-        plugins: { legend: { display: false },
-          tooltip: { rtl: true, callbacks: { label: c => ' ' + c.raw.gov + ': ' + fmtInt(c.raw.x) + ' أوردر · رفض ' + fmtPct(c.raw.y) + ' · ' + fmtMoney(c.raw.net) } } } },
-      plugins: [{ id: 'baseline', afterDraw(chart) {
-        const y = chart.scales.y.getPixelForValue(baseRTO);
-        const ctx = chart.ctx; ctx.save();
-        ctx.strokeStyle = CSSVAR('--red'); ctx.setLineDash([5, 4]); ctx.lineWidth = 1.4;
-        ctx.beginPath(); ctx.moveTo(chart.chartArea.left, y); ctx.lineTo(chart.chartArea.right, y); ctx.stroke();
-        ctx.restore();
-      } }],
-    });
-  }
-}
-
-// ══════════════════════════════════════════════════════
 // §RENDER-CUST — العملاء والخزنة
 // ══════════════════════════════════════════════════════
 function renderCustomersTab() {
@@ -3126,151 +2994,6 @@ function renderCustomersTab() {
       { key: 'lifetimeOrders', label: 'أوردراته الكلية', num: true },
     ],
   });
-}
-
-// ══════════════════════════════════════════════════════
-// §LOG-JS — سجل العمليات (جدول · بحث server-side · ترقيم · تصدير)
-//
-// ⚠️ انحراف مقصود موثّق: الأداة قراءة-فقط، فسجلها الخاص فيه دخول/خروج بس —
-// واللي بيتستبعد في SQL أصلاً. وبما إنها شاشة المدير، السجل هنا بيعرض **كل
-// الأدوات** افتراضيًا مع فلتر أداة وموظف. الفلترة كلها server-side زي المعيار.
-// ══════════════════════════════════════════════════════
-const LOG_PAGE_SIZE = 100;
-let logLoaded = false, logInflight = 0;
-
-// كل الفلاتر multi-select والترتيب ٣ حالات — بالظبط زي أي جدول تاني في الأداة،
-// بس الفلترة والترتيب والترقيم بيحصلوا في SQL (وضع السيرفر في §TABLE-SERVER).
-function renderLogTab() {
-  if (logLoaded) { if (state.tables.log) fetchLog(tblServerParams('log')); return; }
-  logLoaded = true;
-  document.getElementById('panel-log').innerHTML =
-    '<div class="sec"><div class="loading-wrap"><span class="loading-spinner"></span>' +
-    '<div class="loading-text">جاري تحميل السجل…</div></div></div>';
-  // ⚠️ الجدول بيتبني **مرة واحدة** بعد ما قيم الفلاتر توصل من D1. بناؤه فاضي ثم
-  // إعادة بنائه كان بيصفّر أي اختيار عمله المستخدم في الجزء ده من الثانية.
-  apiGet('get_log_tools')
-    .then(d => buildLogTable(d))
-    .catch(e => { showToast('تعذّر تحميل قيم الفلاتر: ' + e.message, 'error'); buildLogTable({ tools: [], employees: [], types: [] }); });
-}
-
-function buildLogTable(d) {
-  const items = (arr, valueKey) => (arr || []).map(x =>
-    typeof x === 'string' ? { value: x, label: x.replace(/_/g, ' '), n: 0 }
-                          : { value: String(x[valueKey]), label: String(x[valueKey]).replace(/_/g, ' '), n: x.n || 0 });
-  createTable({
-    key: 'log', mount: 'panel-log', title: 'سجل عمليات كل الأدوات',
-    server: true, pageRows: LOG_PAGE_SIZE, queryDebounce: 350,
-    exportSheet: 'Log',
-    emptyText: 'لا توجد عمليات مطابقة',
-    note: 'السجل ده هو <b>الذاكرة التشغيلية</b> للمتجر كله: مين عمل إيه وإمتى في كل أداة. ' +
-      'الدخول والخروج مستبعدين في الـ SQL نفسه. البحث بيشتغل على رقم الأوردر والملاحظات والـ SKU. ' +
-      '<b>الفلترة والترتيب بيحصلوا على السجل كله</b> — مش على الصفحة المعروضة — فالعدّاد والتصدير بيوافقوا اللي بتشوفه.',
-    extraActions: '<button class="act-btn" onclick="event.stopPropagation(); fetchLog(tblServerParams(\'log\'))">↺ تحديث</button>',
-    filters: [
-      { key: 'tool',     label: 'الأداة',   valueOf: r => r.tool,     items: items(d.tools, 'tool') },
-      { key: 'employee', label: 'الموظف',   valueOf: r => r.employee, items: items(d.employees, 'employee') },
-      { key: 'type',     label: 'نوع العملية', valueOf: r => r.type,  items: items(d.types, 'type') },
-    ],
-    columns: [
-      { key: 'timestamp', label: 'التاريخ والوقت', num: true, render: r =>
-        // ⚠️ تنسيق سجل metafields_change مخصّص ("YYYY-MM-DD - HH:MM:SS") — Date.parse
-        // بيفشل عليه، فبنعرضه زي ما هو بدل "Invalid Date".
-        /^\d{4}-\d{2}-\d{2}T/.test(r.timestamp || '') ? formatDateTime(r.timestamp) : ('📅 ' + esc(r.timestamp || '—')) },
-      { key: 'tool',      label: 'الأداة',        render: r => '<span class="badge b">' + esc(r.tool) + '</span>' },
-      { key: 'type',      label: 'نوع العملية',   render: r => '<span class="badge">' + esc(r.type) + '</span>' },
-      { key: 'employee',  label: 'الموظف',        render: r => esc((r.employee || '—').replace(/_/g, ' ')) },
-      { key: 'order_name', label: 'الأوردر',      render: r => r.order_name ? orderLink(r.order_name, r.order_id) : '—' },
-      { key: 'sku',       label: 'SKU', num: true, render: r => esc(r.sku || '—') },
-      { key: 'details',   label: 'التفاصيل', sortable: false, render: r => logDetails(r) || '—' },
-    ],
-    defaultSort: 'timestamp', defaultSortDir: 'desc',
-    onQuery: p => fetchLog(p),
-    onExport: p => exportLogXLSX(p),
-  });   // createTable بينهي بـ tblApply → tblApplyServer → onQuery، فمفيش نداء يدوي هنا
-}
-
-function logDetails(e) {
-  let extra = {};
-  try { extra = e.extra ? JSON.parse(e.extra) : {}; } catch {}
-  return [
-    e.notes ? esc(e.notes) : '',
-    e.value_before != null || e.value_after != null ? '<span class="mono">' + esc(String(e.value_before ?? '—')) + ' → ' + esc(String(e.value_after ?? '—')) + '</span>' : '',
-    e.delta != null ? '<span class="badge ' + (e.delta < 0 ? 'r' : 'g') + '">' + (e.delta > 0 ? '+' : '') + esc(String(e.delta)) + '</span>' : '',
-    extra.courier ? '<span class="badge b">' + esc(extra.courier) + '</span>' : '',
-    extra.result ? '<span class="badge ' + (extra.result === 'success' ? 'g' : extra.result === 'warning' ? 'a' : 'r') + '">' + esc(extra.result) + '</span>' : '',
-  ].filter(Boolean).join(' ');
-}
-
-// بيحوّل حالة الجدول لباراميترات الـ endpoint. القيم بتتبعت كقائمة مفصولة بفواصل
-// والـ Worker بيربط كل قيمة كـ placeholder لوحدها (مفيش نص بيدخل SQL).
-function logQueryParams(p) {
-  const q = {};
-  const f = p.filters || {};
-  if (f.tool?.length)     q.tool     = f.tool.join(',');
-  if (f.employee?.length) q.employee = f.employee.join(',');
-  if (f.type?.length)     q.type     = f.type.join(',');
-  if (p.search)           q.search   = p.search;
-  if (p.sort)           { q.sort = p.sort; q.dir = p.dir || 'desc'; }
-  return q;
-}
-
-async function fetchLog(p) {
-  p = p || tblServerParams('log');
-  tblServerBusy('log');
-  const q = logQueryParams(p);
-  const page = p.page || 1;
-  const seq = ++logInflight;   // ⚠️ آخر نداء هو اللي بيرسم — رد قديم بطيء ممنوع يدهس الجديد
-  try {
-    const [pageRes, cnt] = await Promise.all([
-      apiGet('get_logs', { ...q, limit: LOG_PAGE_SIZE, offset: (page - 1) * LOG_PAGE_SIZE }),
-      apiGet('get_logs_count', q),
-    ]);
-    if (seq !== logInflight) return;
-    tblServerRender('log', pageRes.entries || [], cnt.total || 0);
-  } catch (e) {
-    if (seq !== logInflight) return;
-    tblServerBusy('log', e.message);
-  }
-}
-
-async function exportLogXLSX(p) {
-  const q = logQueryParams(p);
-  try {
-    const d = await apiGet('get_logs_export', q);   // endpoint منفصل — بيصدّر كل النتائج مش الصفحة
-    const entries = d.entries || [];
-    if (!entries.length) { showToast('مفيش عمليات للتصدير', 'error'); return; }
-    if (libMissing('ExcelJS')) { showToast('مكتبة التصدير (ExcelJS) ما اتحمّلتش — راجع الاتصال', 'error', 5000); return; }
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet('Log', { views: [{ rightToLeft: true }] });
-    const HEAD = ['التاريخ', 'الأداة', 'نوع العملية', 'الموظف', 'الأوردر', 'SKU', 'قبل', 'بعد', 'ملاحظات'];
-    const desc = [
-      q.tool     ? 'الأداة: ' + q.tool         : 'كل الأدوات',
-      q.employee ? 'الموظف: ' + q.employee     : null,
-      q.type     ? 'نوع العملية: ' + q.type    : null,
-      q.search   ? 'بحث: ' + q.search          : null,
-    ].filter(Boolean).join(' · ');
-    ws.addRow(['سجل العمليات · ' + desc + ' · تم التصدير: ' + formatDateForExport(new Date().toISOString())]);
-    ws.mergeCells(1, 1, 1, HEAD.length);       // ⚠️ لازم يساوي عدد الأعمدة بالظبط
-    ws.getRow(1).font = { bold: true };
-    ws.addRow([]);
-    ws.addRow(HEAD).font = { bold: true };
-    entries.forEach(e => ws.addRow([
-      /^\d{4}-\d{2}-\d{2}T/.test(e.timestamp || '') ? formatDateForExport(e.timestamp) : (e.timestamp || ''),
-      e.tool, e.type, (e.employee || '').replace(/_/g, ' '), e.order_name || '', e.sku || '',
-      e.value_before ?? '', e.value_after ?? '', e.notes || '',
-    ]));
-    ws.columns.forEach(c => { c.width = 20; });
-    const buf = await wb.xlsx.writeBuffer();
-    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const a = document.createElement('a');
-    const href = URL.createObjectURL(blob);
-    a.href = href; a.download = 'operations-log-' + (q.tool ? q.tool.split(',')[0] : 'all') + '.xlsx';
-    a.click();
-    // ⚠️ الإبطال بعد تأخير — الإبطال الفوري بيسحب الـ blob قبل ما بعض المتصفحات
-    // تبدأ التنزيل فعليًا، فالملف بينزل فاضي أو ما بينزلش خالص.
-    setTimeout(() => URL.revokeObjectURL(href), 4000);
-    showToast('تم التصدير ✓', 'success');
-  } catch (e) { showToast('فشل التصدير: ' + e.message, 'error'); }
 }
 
 // ══════════════════════════════════════════════════════

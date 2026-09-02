@@ -107,7 +107,7 @@ await page.goto('file://' + path.join(ROOT, 'index.html'), { waitUntil: 'network
 check('الصفحة اتحمّلت من غير أخطاء JS', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | '));
 check('شاشة الدخول ظاهرة', await page.locator('#loginOverlay:not(.hidden)').count() === 1);
 check('زرار إعدادات جوّه كارت الدخول موجود', await page.locator('#loginSettingsBtn').count() === 1);
-check('نسخة الأداة ظاهرة في شاشة الدخول', (await page.locator('#loginVersionText').textContent()) === 'v1.0.0');
+check('نسخة الأداة ظاهرة في شاشة الدخول', (await page.locator('#loginVersionText').textContent()) === 'v1.1.0');
 check('منطقة الـ PIN مخفية قبل اختيار الموظف', !(await page.locator('#pinZone').evaluate(el => el.classList.contains('visible'))));
 
 await page.selectOption('#loginEmployee', 'Ahmed_Ibraheem');
@@ -139,7 +139,7 @@ check('رسوم تاب القيادة اتبنت', charts.includes('chartCmdTren
 if (SHOTS) { await page.screenshot({ path: path.join(OUT, 'cmd.png') }); await page.screenshot({ path: path.join(OUT, 'cmd-full.png'), fullPage: true }); }
 console.log('\n══ 3) كل التابات بترسم من غير أخطاء ══');
 const tabs = [['sales', 'المبيعات'], ['ops', 'الأوردرات'], ['products', 'المنتجات'],
-              ['stock', 'المخزون'], ['geo', 'الجغرافيا'], ['customers', 'العملاء'], ['log', 'السجل']];
+              ['stock', 'المخزون'], ['customers', 'العملاء']];
 for (const [t, label] of tabs) {
   const before = pageErrors.length;
   await page.click('#tabBtn-' + t);
@@ -200,37 +200,6 @@ const hasDash = await page.evaluate(() => {
 });
 check('كل موديل ناقص تكلفته هامشه null', hasDash, unreliable + ' موديل');
 
-console.log('\n══ 6) تاب السجل — نفس معيار الجداول بالظبط ══');
-await page.click('#tabBtn-log');
-await page.waitForTimeout(1200);
-check('السجل بشكل جدول مش بطاقات', await page.locator('#panel-log table.data-table').count() === 1);
-check('السجل اتبنى بالكومبوننت الموحّد', await page.evaluate(() => !!state.tables.log && state.tables.log.cfg.server === true));
-check('فلاتر السجل multi-select مش <select>',
-  await page.locator('#panel-log .ms-btn').count() === 3 && await page.locator('#panel-log select').count() === 0);
-check('أعمدة السجل قابلة للترتيب', await page.locator('#panel-log th.sortable-th').count() >= 6);
-const logRows = await page.locator('#tblBody-log tr').count();
-check('صفوف السجل اترسمت', logRows === 2, logRows + ' صف');
-const oddTs = await page.locator('#tblBody-log tr:nth-child(2) td:first-child').textContent();
-check('صيغة التاريخ المخصّصة ما بتطلعش Invalid Date', !/Invalid/.test(oddTs), oddTs.trim());
-check('فلتر التاريخ مخفي في تاب السجل',
-  await page.locator('#dashControls').evaluate(el => el.style.display === 'none'));
-
-// الفلترة لازم تروح للسيرفر — مش تتنفّذ على الصفحة المعروضة
-await page.click('#msBtn-log-tool');
-await page.waitForTimeout(200);
-check('قائمة الفلتر بتترسم عند أول فتح (كسول)', await page.locator('#msList-log-tool .ms-item').count() === 3);
-await page.locator('#msList-log-tool .ms-item input[value="order_status"]').check();
-await page.waitForTimeout(900);
-check('⭐ الفلتر اتبعت للسيرفر (مش فلترة صفحة)', LAST_LOG_Q.tool === 'order_status', JSON.stringify(LAST_LOG_Q));
-check('العدّاد اتحدّث من ردّ السيرفر', (await page.locator('#tblCount-log').textContent()).trim() === '1');
-check('chips ظهرت في السجل', await page.locator('#chipsRow-log-tool .ms-chip').count() === 1);
-await page.click('#panel-log th[data-sort-key="employee"]');
-await page.waitForTimeout(900);
-check('⭐ الترتيب اتبعت للسيرفر تصاعدي أولًا', LAST_LOG_Q.sort === 'employee' && LAST_LOG_Q.dir === 'asc', JSON.stringify(LAST_LOG_Q));
-await page.click('#clearAll-log');
-await page.waitForTimeout(900);
-check('مسح الفلاتر رجّع العدّاد للكل', (await page.locator('#tblCount-log').textContent()).trim() === '2');
-
 console.log('\n══ 6b) الأرقام الجديدة بتوصل للشاشة فعلاً ══');
 await page.click('#tabBtn-products');
 await page.waitForTimeout(700);
@@ -245,12 +214,6 @@ await page.waitForTimeout(500);
 const excText = await page.locator('#secBody-cmdExc').textContent();
 check('لوحة الاستثناءات فيها بنود جودة الكتالوج',
   excText.includes('SKU مكرر في الكتالوج') && excText.includes('SKU مباع مش في الكتالوج'));
-check('بانرات get_data بتتخفي في تاب السجل', await (async () => {
-  await page.click('#tabBtn-log'); await page.waitForTimeout(500);
-  const hidden = await page.locator('#globalBanners').evaluate(el => el.style.display === 'none');
-  await page.click('#tabBtn-cmd'); await page.waitForTimeout(300);
-  return hidden;
-})());
 
 console.log('\n══ 7) النوافذ وسلّم z-index ══');
 await page.click('#tabBtn-cmd');
@@ -305,30 +268,25 @@ await page.waitForTimeout(900);
 check('اختيار فترة جاهزة بيمسح رسالة الغلط', !(await page.locator('#rangeError').isVisible()));
 
 console.log('\n══ 9b) عزل الأعطال — عطل رسم ≠ فشل تحميل ══');
-await page.evaluate(() => { window.__origGeo = renderGeoTab; renderGeoTab = () => { throw new Error('عطل رسم مصطنع'); }; });
-await page.evaluate(() => { state.renderedTabs.geo = false; });
-await page.click('#tabBtn-geo');
+await page.evaluate(() => { window.__origStock = renderStockTab; renderStockTab = () => { throw new Error('عطل رسم مصطنع'); }; });
+await page.evaluate(() => { state.renderedTabs.stock = false; });
+await page.click('#tabBtn-stock');
 await page.waitForTimeout(500);
-check('⭐ عطل الرسم بيتعرض جوّه التاب', (await page.locator('#panel-geo .banner.err').count()) === 1);
+check('⭐ عطل الرسم بيتعرض جوّه التاب', (await page.locator('#panel-stock .banner.err').count()) === 1);
 check('⭐ عطل الرسم مش بيتعرض كـ«فشل تحميل البيانات»', (await page.locator('.error-state').count()) === 0);
 check('⭐ باقي التابات فضلت شغّالة', await page.evaluate(() => !!state.data));
-await page.evaluate(() => { renderGeoTab = window.__origGeo; state.renderedTabs.geo = false; });
+await page.evaluate(() => { renderStockTab = window.__origStock; state.renderedTabs.stock = false; });
 
-console.log('\n══ 9c) حالة الخطأ ما بتعرضش أرقام — والسجل يفضل مفتوح ══');
+console.log('\n══ 9c) حالة الخطأ ما بتعرضش أرقام ══');
 await page.click('#tabBtn-cmd');
 await page.waitForTimeout(300);
 await page.evaluate(() => setViewState('error', { message: 'اختبار: فشل جلب الصفحة 3', step: 'stage1_page_3' }));
 await page.waitForTimeout(300);
 check('المحتوى بيتخفي في حالة الخطأ', !(await page.locator('#appMain').isVisible()));
 check('رسالة الخطأ بتسمّي الخطوة', (await page.locator('.error-state').textContent()).includes('stage1_page_3'));
-await page.click('#tabBtn-log');
-await page.waitForTimeout(900);
-check('⭐ تاب السجل بيفضل مفتوح والداشبورد في حالة خطأ',
-  await page.locator('#panel-log table.data-table').isVisible());
-check('⭐ شاشة الخطأ بتتخفي وإحنا في السجل', !(await page.locator('#viewState').isVisible()));
-await page.click('#tabBtn-cmd');
+await page.click('#tabBtn-sales');
 await page.waitForTimeout(300);
-check('الرجوع لتاب تاني بيرجّع شاشة الخطأ', await page.locator('.error-state').isVisible());
+check('التبديل بين التابات في حالة الخطأ بيفضل يعرض شاشة الخطأ', await page.locator('.error-state').isVisible());
 
 console.log('\n══ 10) صافي الأخطاء ══');
 check('صفر أخطاء JS طول الجلسة', pageErrors.length === 0, pageErrors.slice(0, 4).join(' | '));
