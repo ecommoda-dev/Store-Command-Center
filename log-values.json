@@ -1,0 +1,16 @@
+{
+  "tool": "store_command_center",
+  "since": null,
+  "types": {
+    "login": {
+      "result": null,
+      "stage": null,
+      "desc": "دخول موظف"
+    },
+    "logout": {
+      "result": null,
+      "stage": null,
+      "desc": "خروج موظف"
+    }
+  }
+}
