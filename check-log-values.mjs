@@ -189,6 +189,7 @@ const otherTools = new Set();
 const noAnchorFiles = [];
 let sawInsertIntoLogs = false;  // الكاشف المستقل عن أسماء الدوال
 let sawAnySpan        = false;
+const plumbing = new Map();    // `type` جايّ من باراميتر = تمرير مش موضع قيمة
 const spreads = new Map();     // نداء فيه ...spread — ممكن يخبّي type
 const blindSpans = [];         // نداء أنكور مفيهوش ولا مفتاح type بأي شكل
 const add = (map, key, at) => (map.get(key) ?? map.set(key, new Set()).get(key)).add(at);
@@ -374,7 +375,7 @@ for (const file of files) {
       const at   = `${rel}:${lineAt(abs)}`;
       const vals = resolve(raw, CONSTS);
       if (vals) for (const v of vals) add(used, v, at);
-      else add(dynamic, raw.replace(/\s+/g, ' ').slice(0, 120), at);
+      else add(dynamic, raw.replace(/\s+/g, ' '), at);
     };
 
     // (أ) الشكل الصريح: type: <expr>
@@ -399,7 +400,19 @@ for (const file of files) {
       // وبعدين في الكود اللي قبله (التعريف كتير بيبقى فوق النداء مش جوّاه).
       let def = -1;
       for (const d of mask.slice(0, abs).matchAll(RE_LOCAL_TYPE)) def = d.index + d[0].length;
-      take(abs, def < 0 ? '«type» shorthand — مالقيتش تعريف للمتغيّر' : readValue(src, def));
+      if (def < 0) {
+        // مفيش `const type = …` في أي مكان قبل السطر ده ⇒ القيمة جايّة من
+        // **باراميتر** الدالة (أو destructuring). يعني الموضع ده تمرير، مش
+        // المكان اللي القيمة بتتحدد فيه — القيم الحقيقية عند نداءات الدالة.
+        // سابقة: Store-Command-Center → logWhere({ tool, employee, type })
+        // وهي أصلاً بانية شرط SELECT للقراءة، مش دالة كتابة.
+        // بيتسجّل كمعلومة مش كفشل: الكاتب الحقيقي لو موجود هيبان من موضع تاني،
+        // ولو الدالة دي فعلاً غلاف كتابة، اسمها يتحط في logAnchors.
+        seen.add(abs); found++;
+        add(plumbing, rel, `${rel}:${lineAt(abs)}`);
+        continue;
+      }
+      take(abs, readValue(src, def));
     }
 
     // (د) spread — ممكن يجيب type من أوبجكت تاني. مش بنحاول نحلّه، بس بنقوله.
@@ -442,7 +455,10 @@ for (const [type, meta] of Object.entries(reg.types || {})) {
 // من «حاجة التحقق مش شايفها» لـ«حاجة اتراجعت واتقرر إنها بتتحل وقت التشغيل».
 // من غير الاعتراف ده، التحذير بيبقى ضوضاء بيتعوّد عليها الواحد ويعدّيها.
 const acknowledged = new Set(reg.dynamicTypes || []);
-const unackDynamic = [...dynamic.keys()].filter((expr) => !acknowledged.has(expr));
+// المطابقة **بالبادئة**: التعبير ممكن يكون ١٥٠ حرف، فالمفتاح القصير المميّز
+// بيكفي. لزقة التعبير كله في JSON غير عملية وبتتكسر مع أي إعادة تنسيق.
+const isAck = (expr) => [...acknowledged].some((a) => expr.startsWith(a));
+const unackDynamic = [...dynamic.keys()].filter((expr) => !isAck(expr));
 
 // الريبو بيكتب في logs بس مفيش ولا نداء اتعرف عليه = اسم دالة مش في الأنكورز.
 // الريبو بيكتب في logs والاستخراج طلّع **صفر** قيمة = الاستخراج فشل، مهما
@@ -478,12 +494,12 @@ if (badVocab.length) {
 if (unackDynamic.length) {
   console.log('🔴 قيم ديناميكية مش معترَف بيها — راجع كل قيمة ممكنة تطلع منها،');
   console.log('   سجّلها في types، وضيف التعبير في dynamicTypes:');
-  for (const expr of unackDynamic) console.log(`   ${[...dynamic.get(expr)].join(' · ')}  →  ${expr}`);
+  for (const expr of unackDynamic) console.log(`   ${[...dynamic.get(expr)].join(' · ')}  →  ${expr.slice(0, 110)}`);
   console.log('');
 }
 if (orphanInsert) {
   console.log('🔴 الريبو بيكتب في جدول logs والاستخراج طلّع صفر قيمة.');
-  console.log('   يعني اسم دالة الكتابة أو الباني مش في الأنكورز، زوّده في');
+  console.log('   يعني اسم دالة الكتابة أو الباني مش في الأنكورز — زوّده في');
   console.log('   logAnchors جوّه log-values.json. الاسم ممكن يكون دالة كتابة');
   console.log('   (writeLogBatch) أو دالة بتبني الصفوف (buildPrintLogRows).');
   console.log('   سابقة: Order-SKU-Barcode-Printer — 739 صف في D1 فاتت الجرد.\n');
@@ -492,10 +508,16 @@ if (blindSpans.length) {
   console.log('🔴 نداء كتابة لوج مفيهوش أي مفتاح type — الاستخراج فشل، مش الكود:');
   console.log(`   ${blindSpans.join(' · ')}\n`);
 }
-const ackDynamic = [...dynamic.keys()].filter((e) => acknowledged.has(e));
+const ackDynamic = [...dynamic.keys()].filter(isAck);
 if (ackDynamic.length) {
   console.log('⚠️  قيم ديناميكية معترَف بيها (الحارس وقت التشغيل هو اللي بيغطّيها):');
-  for (const expr of ackDynamic) console.log(`   ${[...dynamic.get(expr)].join(' · ')}  →  ${expr}`);
+  for (const expr of ackDynamic) console.log(`   ${[...dynamic.get(expr)].join(' · ')}  →  ${expr.slice(0, 110)}`);
+  console.log('');
+}
+if (plumbing.size) {
+  console.log('ℹ️  `type` جايّ من باراميتر (تمرير مش موضع قيمة) — القيم الحقيقية');
+  console.log('   عند نداءات الدالة. لو الدالة دي غلاف كتابة، حط اسمها في logAnchors:');
+  for (const [, ats] of plumbing) console.log(`   ${[...ats].join(' · ')}`);
   console.log('');
 }
 if (spreads.size) {
